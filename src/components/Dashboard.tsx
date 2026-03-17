@@ -5,9 +5,13 @@ import { RealEstateClip } from "./modules/RealEstateClip";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 
-export const Dashboard: React.FC = () => {
+interface DashboardProps {
+  user?: any;
+  onSignOut?: () => void;
+}
+
+export const Dashboard: React.FC<DashboardProps> = ({ user, onSignOut }) => {
   const [activeModule, setActiveModule] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
 
   const modules = [
     {
@@ -38,11 +42,20 @@ export const Dashboard: React.FC = () => {
       <nav className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">Smoovebox AI</h1>
-          <div className="space-x-4">
+          <div className="space-x-4 flex items-center">
+            {user && (
+              <span className="text-sm text-gray-600">
+                {user.email}
+              </span>
+            )}
             <Button variant="outline" size="sm">
               Profile
             </Button>
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={onSignOut}
+            >
               Logout
             </Button>
           </div>
