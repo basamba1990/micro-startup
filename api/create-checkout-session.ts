@@ -56,12 +56,18 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         },
       ],
       mode: "subscription",
-      success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: cancelUrl,
+      success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}&success=true`,
+      cancel_url: `${cancelUrl}?canceled=true`,
       client_reference_id: userId,
       metadata: {
         userId,
         plan,
+      },
+      subscription_data: {
+        metadata: {
+          userId,
+          plan,
+        },
       },
     });
 

@@ -1,9 +1,15 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import { OpenAI } from "openai";
+import { createClient } from "@supabase/supabase-js";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+const supabase = createClient(
+  process.env.SUPABASE_URL || "",
+  process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+);
 
 export default async (req: VercelRequest, res: VercelResponse) => {
   if (req.method !== "POST") {
@@ -18,6 +24,32 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
   if (idea.trim().length === 0) {
     return res.status(400).json({ error: "Idea cannot be empty" });
+  }
+
+  // Check user credits
+  try {
+    const { data: credits, error: creditError } = await supabase
+      .from("user_credits")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("product_type", "linkedin_ghost")
+      .single();
+
+    if (creditError || !credits) {
+      return res.status(403).json({
+        error: "No credits available. Please upgrade your plan.",
+      });
+    }
+
+    // Check if user has unlimited credits or available credits
+    if (credits.credits_available !== -1 && credits.credits_available <= 0) {
+      return res.status(403).json({
+        error: "Insufficient credits. Please upgrade your plan.",
+      });
+    }
+  } catch (error) {
+    console.error("Credit check error:", error);
+    return res.status(500).json({ error: "Failed to verify credits" });
   }
 
   try {
@@ -49,6 +81,25 @@ export default async (req: VercelRequest, res: VercelResponse) => {
     }
 
     const result = JSON.parse(content);
+
+    // Deduct credit after successful generation
+    const { data: credits } = await supabase
+      .from("user_credits")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("product_type", "linkedin_ghost")
+      .single();
+
+    if (credits && credits.credits_available !== -1) {
+      await supabase
+        .from("user_credits")
+        .update({
+          credits_used: credits.credits_used + 1,
+          credits_available: credits.credits_available - 1,
+        })
+        .eq("user_id", userId)
+        .eq("product_type", "linkedin_ghost");
+    }
 
     return res.status(200).json({
       success: true,
