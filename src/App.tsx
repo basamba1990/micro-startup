@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Dashboard } from "./components/Dashboard";
 import { Home } from "./pages/Home";
+import { Auth } from "./pages/Auth";
 import { Payment } from "./pages/Payment";
 import { getCurrentUser, signOut, initializeUserCredits } from "./lib/supabase";
 
-type Page = "home" | "dashboard" | "payment";
+type Page = "home" | "auth" | "dashboard" | "payment";
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>("home");
@@ -25,6 +26,8 @@ function App() {
         }
         
         setCurrentPage("dashboard");
+      } else {
+        setCurrentPage("home");
       }
       setLoading(false);
     };
@@ -52,10 +55,32 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       {currentPage === "home" && (
-        <Home onSignIn={() => setCurrentPage("payment")} />
+        <Home 
+          onSignIn={() => setCurrentPage("auth")}
+          onSignUp={() => setCurrentPage("auth")}
+        />
+      )}
+      {currentPage === "auth" && (
+        <Auth 
+          onSuccess={async () => {
+            const currentUser = await getCurrentUser();
+            setUser(currentUser);
+            if (currentUser) {
+              try {
+                await initializeUserCredits(currentUser.id);
+              } catch (error) {
+                console.error("Failed to initialize credits:", error);
+              }
+              setCurrentPage("dashboard");
+            }
+          }}
+        />
       )}
       {currentPage === "dashboard" && user && (
-        <Dashboard />
+        <Dashboard 
+          user={user}
+          onSignOut={handleSignOut}
+        />
       )}
       {currentPage === "payment" && (
         <Payment userId={user?.id || ""} onSuccess={() => setCurrentPage("dashboard")} />
