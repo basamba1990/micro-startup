@@ -59,18 +59,21 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         {
           role: "system",
           content:
-            "You are a LinkedIn video script expert. Generate engaging, concise scripts optimized for LinkedIn videos. Always respond with valid JSON.",
+            "You are a LinkedIn video script expert. Generate engaging, concise scripts optimized for LinkedIn videos. You MUST respond ONLY with a valid JSON object.",
         },
         {
           role: "user",
           content: `Create a 60-second LinkedIn video script for this idea: "${idea}". 
           
           Return a JSON object with:
-          - hook: A compelling opening line (max 20 words)
-          - script: The full 60-second script
-          - cta: A call-to-action (max 15 words)`,
+          {
+            "hook": "A compelling opening line (max 20 words)",
+            "script": "The full 60-second script",
+            "cta": "A call-to-action (max 15 words)"
+          }`,
         },
       ],
+      response_format: { type: "json_object" },
       temperature: 0.7,
       max_tokens: 500,
     });

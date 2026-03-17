@@ -59,7 +59,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         {
           role: "system",
           content:
-            "You are an expert real estate marketing specialist. Create compelling property marketing scripts and highlights. Always respond with valid JSON.",
+            "You are an expert real estate marketing specialist. Create compelling property marketing scripts and highlights. You MUST respond ONLY with a valid JSON object.",
         },
         {
           role: "user",
@@ -68,11 +68,14 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           "${description}"
           
           Return a JSON object with:
-          - script: A compelling 30-second marketing script
-          - highlights: Array of 5 key selling points
-          - seo_description: SEO-optimized description (max 160 chars)`,
+          {
+            "script": "A compelling 30-second marketing script",
+            "highlights": ["point 1", "point 2", ...],
+            "seo_description": "SEO-optimized description (max 160 chars)"
+          }`,
         },
       ],
+      response_format: { type: "json_object" },
       temperature: 0.7,
       max_tokens: 600,
     });

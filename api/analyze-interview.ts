@@ -59,7 +59,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         {
           role: "system",
           content:
-            "You are an expert HR interviewer and communication analyst. Analyze interview transcripts and provide detailed feedback. Always respond with valid JSON.",
+            "You are an expert HR interviewer and communication analyst. Analyze interview transcripts and provide detailed feedback. You MUST respond ONLY with a valid JSON object.",
         },
         {
           role: "user",
@@ -68,15 +68,18 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           "${transcript}"
           
           Return a JSON object with:
-          - clarity_score: 0-100
-          - persuasion_score: 0-100
-          - emotion_score: 0-100
-          - engagement_score: 0-100
-          - storytelling_score: 0-100
-          - feedback: Array of key feedback points (3-5 points)
-          - recommendation: Hiring recommendation (one of: "Strong Yes", "Yes", "Maybe", "No")`,
+          {
+            "clarity_score": 0-100,
+            "persuasion_score": 0-100,
+            "emotion_score": 0-100,
+            "engagement_score": 0-100,
+            "storytelling_score": 0-100,
+            "feedback": ["point 1", "point 2", ...],
+            "recommendation": "Strong Yes/Yes/Maybe/No"
+          }`,
         },
       ],
+      response_format: { type: "json_object" },
       temperature: 0.7,
       max_tokens: 800,
     });
