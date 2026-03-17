@@ -54,8 +54,8 @@ export const Auth: React.FC<AuthProps> = ({ onSuccess }) => {
             </h2>
             <p className="text-gray-600">
               {isSignUp
-                ? "Join Smoovebox AI to get started"
-                : "Welcome back to Smoovebox AI"}
+                ? "Join Vidiom.ai to get started"
+                : "Welcome back to Vidiom.ai"}
             </p>
           </div>
 
