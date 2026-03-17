@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { Textarea } from "../ui/textarea";
 import { Input } from "../ui/input";
 import { analyzeInterview } from "../../lib/openai";
+import { getCurrentUser } from "../../lib/supabase";
 
 export const RecruitAudit: React.FC = () => {
   const [jobTitle, setJobTitle] = useState("");
@@ -11,6 +12,17 @@ export const RecruitAudit: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
+  const [userId, setUserId] = useState<string>("");
+
+  useEffect(() => {
+    const getUser = async () => {
+      const user = await getCurrentUser();
+      if (user) {
+        setUserId(user.id);
+      }
+    };
+    getUser();
+  }, []);
 
   const handleAnalyze = async () => {
     if (!jobTitle.trim() || !transcript.trim()) {
@@ -22,7 +34,7 @@ export const RecruitAudit: React.FC = () => {
     setError("");
 
     try {
-      const analysis = await analyzeInterview(transcript, jobTitle);
+      const analysis = await analyzeInterview(transcript, jobTitle, userId);
       setResult(analysis);
     } catch (err) {
       setError("Failed to analyze interview. Please try again.");

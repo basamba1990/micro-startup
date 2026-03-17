@@ -1,14 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { Textarea } from "../ui/textarea";
 import { generateRealEstateScript } from "../../lib/openai";
+import { getCurrentUser } from "../../lib/supabase";
 
 export const RealEstateClip: React.FC = () => {
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
+  const [userId, setUserId] = useState<string>("");
+
+  useEffect(() => {
+    const getUser = async () => {
+      const user = await getCurrentUser();
+      if (user) {
+        setUserId(user.id);
+      }
+    };
+    getUser();
+  }, []);
 
   const handleGenerate = async () => {
     if (!description.trim()) {
@@ -20,7 +32,7 @@ export const RealEstateClip: React.FC = () => {
     setError("");
 
     try {
-      const script = await generateRealEstateScript(description);
+      const script = await generateRealEstateScript(description, userId);
       setResult(script);
     } catch (err) {
       setError("Failed to generate script. Please try again.");
