@@ -4,14 +4,30 @@ import { Card } from "../components/ui/card";
 
 interface HomeProps {
   onSignIn: () => void;
+  onSignUp: () => void;
 }
 
-export const Home: React.FC<HomeProps> = ({ onSignIn }) => {
+export const Home: React.FC<HomeProps> = ({ onSignIn, onSignUp }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-600">
       <nav className="bg-white/10 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-white">Smoovebox AI</h1>
+          <div className="space-x-4">
+            <Button
+              onClick={onSignIn}
+              variant="outline"
+              className="border-white text-white hover:bg-white/20"
+            >
+              Sign In
+            </Button>
+            <Button
+              onClick={onSignUp}
+              className="bg-white text-blue-600 hover:bg-gray-100"
+            >
+              Sign Up
+            </Button>
+          </div>
         </div>
       </nav>
 
@@ -22,7 +38,7 @@ export const Home: React.FC<HomeProps> = ({ onSignIn }) => {
             Generate scripts, analyze interviews, and create marketing content in seconds
           </p>
           <Button
-            onClick={onSignIn}
+            onClick={onSignUp}
             className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 text-lg"
           >
             Get Started Free
