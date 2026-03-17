@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Dashboard } from "./components/Dashboard";
 import { Home } from "./pages/Home";
 import { Payment } from "./pages/Payment";
-import { getCurrentUser, signOut } from "./lib/supabase";
+import { getCurrentUser, signOut, initializeUserCredits } from "./lib/supabase";
 
 type Page = "home" | "dashboard" | "payment";
 
@@ -15,7 +15,15 @@ function App() {
     const checkAuth = async () => {
       const currentUser = await getCurrentUser();
       setUser(currentUser);
+      
       if (currentUser) {
+        // Initialize credits for the user
+        try {
+          await initializeUserCredits(currentUser.id);
+        } catch (error) {
+          console.error("Failed to initialize credits:", error);
+        }
+        
         setCurrentPage("dashboard");
       }
       setLoading(false);
