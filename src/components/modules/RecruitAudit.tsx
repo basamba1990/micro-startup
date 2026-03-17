@@ -51,12 +51,17 @@ export const RecruitAudit: React.FC = () => {
 
     try {
       const analysis = await analyzeInterview(transcript, jobTitle, userId);
-      setResult(analysis);
-      // Refresh credits after analysis
-      await fetchUserPlan(userId);
+      if (analysis) {
+        setResult(analysis);
+        // Refresh credits after analysis
+        await fetchUserPlan(userId);
+      } else {
+        throw new Error("Received empty response from server");
+      }
     } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to analyze interview. Please try again.");
-      console.error(err);
+      const errorMessage = err.response?.data?.error || err.message || "Failed to analyze interview. Please try again.";
+      setError(errorMessage);
+      console.error("Analysis error:", err);
     } finally {
       setLoading(false);
     }
