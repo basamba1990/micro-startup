@@ -24,6 +24,21 @@ export default async (req: VercelRequest, res: VercelResponse) => {
   }
 
   try {
+    // Check if user already has subscription
+    const { data: existingSubscription } = await supabase
+      .from("subscriptions")
+      .select("*")
+      .eq("user_id", userId)
+      .limit(1);
+
+    // If subscription already exists, don't reinitialize
+    if (existingSubscription && existingSubscription.length > 0) {
+      return res.status(200).json({
+        success: true,
+        message: "User already has subscription",
+      });
+    }
+
     // Check if user already has credits initialized
     const { data: existingCredits } = await supabase
       .from("user_credits")
@@ -49,15 +64,15 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       })
     );
 
-    const { error } = await supabase
+    const { error: creditsInsertError } = await supabase
       .from("user_credits")
       .insert(creditsToInsert);
 
-    if (error) {
-      console.error("Error initializing credits:", error);
+    if (creditsInsertError) {
+      console.error("Error initializing credits:", creditsInsertError);
       return res.status(500).json({
         error: "Failed to initialize credits",
-        details: error.message,
+        details: creditsInsertError.message,
       });
     }
 
@@ -72,7 +87,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
     if (subError) {
       console.error("Error creating subscription:", subError);
-      // Don't fail if subscription creation fails
+      // Don't fail if subscription creation fails, credits were already created
     }
 
     return res.status(200).json({

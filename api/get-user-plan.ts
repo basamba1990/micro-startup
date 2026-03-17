@@ -6,6 +6,25 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || ""
 );
 
+// Pricing plans configuration
+const PRICING_PLANS = {
+  freemium: {
+    linkedin_ghost: 5,
+    recruit_audit: 3,
+    realestate_clip: 3,
+  },
+  pro: {
+    linkedin_ghost: 100,
+    recruit_audit: 50,
+    realestate_clip: 50,
+  },
+  enterprise: {
+    linkedin_ghost: -1, // Unlimited
+    recruit_audit: -1,
+    realestate_clip: -1,
+  },
+};
+
 export default async (req: VercelRequest, res: VercelResponse) => {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -45,14 +64,48 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       return res.status(500).json({ error: "Failed to fetch credits" });
     }
 
-    // Format credits response
-    const creditsMap: Record<string, any> = {};
-    if (credits) {
+    // Format credits response - map product_type to credit objects
+    const creditsMap: Record<string, any> = {
+      linkedin_ghost: {
+        available: 0,
+        used: 0,
+        unlimited: false,
+      },
+      recruit_audit: {
+        available: 0,
+        used: 0,
+        unlimited: false,
+      },
+      realestate_clip: {
+        available: 0,
+        used: 0,
+        unlimited: false,
+      },
+    };
+
+    // Get plan limits
+    const planLimits = PRICING_PLANS[plan as keyof typeof PRICING_PLANS] || PRICING_PLANS.freemium;
+
+    // Process credits from database
+    if (credits && credits.length > 0) {
       credits.forEach((credit) => {
-        creditsMap[credit.product_type] = {
-          available: credit.credits_available,
-          used: credit.credits_used,
-          unlimited: credit.credits_available === -1,
+        const productType = credit.product_type;
+        if (creditsMap[productType]) {
+          creditsMap[productType] = {
+            available: credit.credits_available,
+            used: credit.credits_used,
+            unlimited: credit.credits_available === -1,
+          };
+        }
+      });
+    } else {
+      // If no credits found, use plan defaults
+      Object.keys(planLimits).forEach((productType) => {
+        const limit = planLimits[productType as keyof typeof planLimits];
+        creditsMap[productType] = {
+          available: limit,
+          used: 0,
+          unlimited: limit === -1,
         };
       });
     }
