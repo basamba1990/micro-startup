@@ -12,7 +12,7 @@ export const Home: React.FC<HomeProps> = ({ onSignIn, onSignUp }) => {
     <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-600">
       <nav className="bg-white/10 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-white">Smoovebox AI</h1>
+          <h1 className="text-2xl font-bold text-white">Vidiom.ai</h1>
           <div className="space-x-4">
             <Button
               onClick={onSignIn}
@@ -33,7 +33,7 @@ export const Home: React.FC<HomeProps> = ({ onSignIn, onSignUp }) => {
 
       <main className="max-w-7xl mx-auto px-4 py-16">
         <div className="text-center mb-16">
-          <h2 className="text-5xl font-bold text-white mb-4">Transform Your Videos with AI</h2>
+            <h2 className="text-5xl font-bold text-white mb-4">Transform Your Videos with AI-Powered Scripts & Analysis</h2>
           <p className="text-xl text-white/90 mb-8">
             Generate scripts, analyze interviews, and create marketing content in seconds
           </p>
