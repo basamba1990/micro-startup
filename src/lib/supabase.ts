@@ -148,3 +148,32 @@ export const getPaymentHistory = async (userId: string) => {
 
   return { data, error };
 };
+
+// Initialize user credits
+export const initializeUserCredits = async (userId: string) => {
+  try {
+    const response = await fetch("/api/init-user-credits", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId }),
+    });
+
+    return await response.json();
+  } catch (error) {
+    console.error("Initialize credits error:", error);
+    throw error;
+  }
+};
+
+// Get user plan and credits
+export const getUserPlan = async (userId: string) => {
+  try {
+    const response = await fetch(`/api/get-user-plan?userId=${userId}`);
+    return await response.json();
+  } catch (error) {
+    console.error("Get user plan error:", error);
+    throw error;
+  }
+};
