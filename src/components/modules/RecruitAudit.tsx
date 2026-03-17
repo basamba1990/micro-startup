@@ -4,7 +4,7 @@ import { Card } from "../ui/card";
 import { Textarea } from "../ui/textarea";
 import { Input } from "../ui/input";
 import { analyzeInterview } from "../../lib/openai";
-import { getCurrentUser } from "../../lib/supabase";
+import { getCurrentUser, getUserPlan } from "../../lib/supabase";
 
 export const RecruitAudit: React.FC = () => {
   const [jobTitle, setJobTitle] = useState("");
@@ -13,16 +13,32 @@ export const RecruitAudit: React.FC = () => {
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
   const [userId, setUserId] = useState<string>("");
+  const [userPlan, setUserPlan] = useState<any>(null);
+  const [creditsLoading, setCreditsLoading] = useState(true);
 
   useEffect(() => {
     const getUser = async () => {
       const user = await getCurrentUser();
       if (user) {
         setUserId(user.id);
+        fetchUserPlan(user.id);
       }
     };
     getUser();
   }, []);
+
+  const fetchUserPlan = async (userId: string) => {
+    try {
+      const response = await getUserPlan(userId);
+      if (response.success) {
+        setUserPlan(response);
+      }
+    } catch (error) {
+      console.error("Failed to fetch user plan:", error);
+    } finally {
+      setCreditsLoading(false);
+    }
+  };
 
   const handleAnalyze = async () => {
     if (!jobTitle.trim() || !transcript.trim()) {
@@ -36,25 +52,54 @@ export const RecruitAudit: React.FC = () => {
     try {
       const analysis = await analyzeInterview(transcript, jobTitle, userId);
       setResult(analysis);
-    } catch (err) {
-      setError("Failed to analyze interview. Please try again.");
+      // Refresh credits after analysis
+      await fetchUserPlan(userId);
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Failed to analyze interview. Please try again.");
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
+  const recruitCredits = userPlan?.credits?.recruit_audit;
+  const hasCredits =
+    recruitCredits?.unlimited || (recruitCredits?.available && recruitCredits.available > 0);
+
   return (
     <div className="space-y-6">
       <Card>
-        <h2 className="text-2xl font-bold mb-4">Recruit Audit</h2>
-        <p className="text-gray-600 mb-6">Analyze interview videos with AI-powered scoring</p>
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h2 className="text-2xl font-bold">Recruit Audit</h2>
+            <p className="text-gray-600">Analyze interview videos with AI-powered scoring</p>
+          </div>
+          {!creditsLoading && recruitCredits && (
+            <div className="text-right">
+              <p className="text-sm text-gray-600">Credits Available</p>
+              <p className="text-2xl font-bold text-purple-600">
+                {recruitCredits.unlimited ? "∞" : recruitCredits.available}
+              </p>
+              {!recruitCredits.unlimited && (
+                <p className="text-xs text-gray-500">Used: {recruitCredits.used}</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {!hasCredits && !creditsLoading && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 rounded text-red-700">
+            <p className="font-semibold">No credits available</p>
+            <p className="text-sm">Please upgrade your plan to analyze more interviews.</p>
+          </div>
+        )}
 
         <Input
           label="Job Title"
           placeholder="e.g., Senior Software Engineer"
           value={jobTitle}
           onChange={(e) => setJobTitle(e.target.value)}
+          disabled={!hasCredits && !creditsLoading}
         />
 
         <Textarea
@@ -65,10 +110,16 @@ export const RecruitAudit: React.FC = () => {
           rows={6}
           className="mt-4"
           error={error}
+          disabled={!hasCredits && !creditsLoading}
         />
 
-        <Button onClick={handleAnalyze} loading={loading} className="mt-4 w-full">
-          Analyze Interview
+        <Button
+          onClick={handleAnalyze}
+          loading={loading}
+          disabled={!hasCredits && !creditsLoading}
+          className="mt-4 w-full"
+        >
+          {!hasCredits && !creditsLoading ? "Upgrade to Analyze" : "Analyze Interview"}
         </Button>
       </Card>
 
