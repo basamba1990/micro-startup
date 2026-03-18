@@ -2,7 +2,7 @@ import { VercelRequest, VercelResponse } from "@vercel/node";
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2023-10-16",
+  apiVersion: "2023-08-16",
 });
 
 const PRICING_PLANS = {
@@ -51,7 +51,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       payment_method_types: ["card"],
       line_items: [
         {
-          price: planConfig.priceId,
+          price: planConfig.price !== 0 ? planConfig.priceId : undefined,
           quantity: 1,
         },
       ],
