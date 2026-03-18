@@ -1,4 +1,5 @@
 import axios from "axios";
+import { supabase } from "./supabase";
 
 // Transcribe audio using Whisper API
 export const transcribeAudio = async (audioUrl: string, language: string = "en") => {
@@ -22,15 +23,15 @@ export const transcribeAudio = async (audioUrl: string, language: string = "en")
 // Generate LinkedIn script
 export const generateLinkedInScript = async (idea: string, userId: string) => {
   try {
-    const response = await axios.post("/api/generate-linkedin-script", {
-      idea,
-      userId,
+    const { data, error } = await supabase.functions.invoke("linkedin-ghost", {
+      body: { idea, userId },
     });
 
-    if (response.data.success) {
-      return response.data.data;
+    if (error) throw error;
+    if (data.success) {
+      return data.data;
     }
-    throw new Error(response.data.error || "Failed to generate script");
+    throw new Error(data.error || "Failed to generate script");
   } catch (error) {
     console.error("Script generation error:", error);
     throw error;
@@ -40,16 +41,15 @@ export const generateLinkedInScript = async (idea: string, userId: string) => {
 // Analyze interview transcript
 export const analyzeInterview = async (transcript: string, jobTitle: string, userId: string) => {
   try {
-    const response = await axios.post("/api/analyze-interview", {
-      transcript,
-      jobTitle,
-      userId,
+    const { data, error } = await supabase.functions.invoke("recruit-audit", {
+      body: { transcript, jobTitle, userId },
     });
 
-    if (response.data.success) {
-      return response.data.data;
+    if (error) throw error;
+    if (data.success) {
+      return data.data;
     }
-    throw new Error(response.data.error || "Failed to analyze interview");
+    throw new Error(data.error || "Failed to analyze interview");
   } catch (error) {
     console.error("Interview analysis error:", error);
     throw error;
@@ -59,15 +59,15 @@ export const analyzeInterview = async (transcript: string, jobTitle: string, use
 // Generate real estate marketing script
 export const generateRealEstateScript = async (description: string, userId: string) => {
   try {
-    const response = await axios.post("/api/generate-realestate-script", {
-      description,
-      userId,
+    const { data, error } = await supabase.functions.invoke("realestate-clip", {
+      body: { description, userId },
     });
 
-    if (response.data.success) {
-      return response.data.data;
+    if (error) throw error;
+    if (data.success) {
+      return data.data;
     }
-    throw new Error(response.data.error || "Failed to generate script");
+    throw new Error(data.error || "Failed to generate script");
   } catch (error) {
     console.error("Real estate script generation error:", error);
     throw error;
