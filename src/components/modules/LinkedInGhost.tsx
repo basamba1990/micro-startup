@@ -49,12 +49,17 @@ export const LinkedInGhost: React.FC = () => {
 
     try {
       const script = await generateLinkedInScript(idea, userId);
-      setResult(script);
-      // Refresh credits after generation
-      await fetchUserPlan(userId);
+      if (script) {
+        setResult(script);
+        // Refresh credits after generation
+        await fetchUserPlan(userId);
+      } else {
+        throw new Error("Received empty response from server");
+      }
     } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to generate script. Please try again.");
-      console.error(err);
+      const errorMessage = err.response?.data?.error || err.message || "Failed to generate script. Please try again.";
+      setError(errorMessage);
+      console.error("Generation error:", err);
     } finally {
       setLoading(false);
     }
