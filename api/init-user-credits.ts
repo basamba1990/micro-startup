@@ -66,7 +66,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
     const { error: creditsInsertError } = await supabase
       .from("user_credits")
-      .insert(creditsToInsert);
+      .upsert(creditsToInsert, { onConflict: "user_id,product_type" });
 
     if (creditsInsertError) {
       console.error("Error initializing credits:", creditsInsertError);

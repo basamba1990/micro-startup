@@ -88,7 +88,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
     // Process credits from database
     if (credits && credits.length > 0) {
-      credits.forEach((credit) => {
+      credits.forEach((credit: any) => {
         const productType = credit.product_type;
         if (creditsMap[productType]) {
           creditsMap[productType] = {
